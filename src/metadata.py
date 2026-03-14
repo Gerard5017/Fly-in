@@ -28,7 +28,7 @@ class Color(Enum):
     violet = "violet"
 
 
-class Metadata_hub(BaseModel):
+class MetadataHub(BaseModel):
     zone: Zone = Field(default=Zone.normal)
     color: Color = Field(default=Color.white)
     max_drones: int = Field(default=1, ge=1)
