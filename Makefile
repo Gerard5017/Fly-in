@@ -26,9 +26,9 @@ clean:
 
 fclean: clean
 	@clear
-	rm -rf .venv
-	rm -f uv.lock
-	rm -f maze.txt
+	@rm -rf .venv
+	@rm -f uv.lock
+	@rm -f maze.txt
 
 lint:
 	@clear

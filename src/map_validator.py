@@ -26,14 +26,16 @@ class MapValidator():
 
                 self.parse_nb_drones(content[i])
                 i += 1
-                
-                while i < len(content) and (content[i].startswith("hub:") or
-                    content[i].startswith("start_hub:") or
-                    content[i].startswith("end_hub:")):
+
+                while (i < len(content) and
+                       (content[i].startswith("hub:") or
+                        content[i].startswith("start_hub:") or
+                        content[i].startswith("end_hub:"))):
                     self.parse_hub(content[i])
                     i += 1
 
-                while i < len(content) and content[i].startswith("connection:"):
+                while (i < len(content) and
+                       content[i].startswith("connection:")):
                     self.parse_connection(content[i])
                     i += 1
 
@@ -50,11 +52,12 @@ class MapValidator():
             raise ValidationError(e)
 
     def remove_comment(self, content: list[str]) -> list[str]:
-        copy =[]
+        copy = []
         for line in content:
             if not (line.startswith("#") or line == ""):
                 copy.append(line)
         return copy
+
 
     def parse_nb_drones(self, first_line: str):
         e = "first line of the map file must be \"nb_drones: 'value: int'\""
@@ -95,8 +98,10 @@ class MapValidator():
             if existing_hub["name"] == name:
                 raise ValueError(f"hub '{name}' already exists")
 
-            if existing_hub["x"] == int(x) and existing_hub["y"] == int(y):
-                raise ValueError(f"a hub already exists at position ({x}, {y})")
+            if (existing_hub["x"] == int(x)
+               and existing_hub["y"] == int(y)):
+                raise ValueError("a hub already exists at position "
+                                 f"({x}, {y})")
 
         for special_hub in [self.start_hub, self.end_hub]:
             if special_hub is not None:
@@ -104,7 +109,8 @@ class MapValidator():
                     raise ValueError(f"hub '{name}' already exists")
 
                 if special_hub["x"] == int(x) and special_hub["y"] == int(y):
-                    raise ValueError(f"a hub already exists at position ({x}, {y})")
+                    raise ValueError("a hub already exists at position "
+                                     f"({x}, {y})")
 
         for c in name:
             if not (c.isdigit() or c.isalpha() or c == "_"):
@@ -146,8 +152,8 @@ class MapValidator():
 
     def parse_connection(self, line) -> None:
         e = ("A connection must be declared like "
-            "\"connection: 'zone1'-'zone2' '[metadata]'\"")
-        
+             "\"connection: 'zone1'-'zone2' '[metadata]'\"")
+
         meta_match = re.search(r'\[([^\]]*)\]', line)
         metadata_str = meta_match.group(1) if meta_match else ""
         data_part = line.split("[")[0] if meta_match else line
@@ -162,29 +168,40 @@ class MapValidator():
 
         zone1, zone2 = zones[0].strip(), zones[1].strip()
 
-        all_hubs = self.hub + [h for h in [self.start_hub, self.end_hub] if h is not None]
+        all_hubs = (self.hub + [h for h in [self.start_hub, self.end_hub]
+                                if h is not None])
         all_names = [h["name"] for h in all_hubs]
 
         if zone1 not in all_names:
             raise ValueError(f"zone '{zone1}' doesn't exist")
+
         if zone2 not in all_names:
             raise ValueError(f"zone '{zone2}' doesn't exist")
 
+        for hub in all_hubs:
+            if hub['name'] == zone1:
+                coord_zone1 = tuple((hub['x'], hub['y']))
+            if hub['name'] == zone2:
+                coord_zone2 = tuple((hub['x'], hub['y']))
+
         for existing in self.connections:
-            if ((existing[0] == zone1 and existing[1] == zone2) or
-            (existing[0] == zone2 and existing[1] == zone1)):
-                raise ValueError(f"connection '{zone1}-{zone2}' already exists")
+            if ((existing[0] == coord_zone1 and existing[1] == coord_zone2) or
+               (existing[0] == coord_zone2 and existing[1] == coord_zone1)):
+                raise ValueError(f"connection '{zone1}-{zone2}'"
+                                 " already exists")
 
         max_link_capacity = 1
         for metadata in metadata_str.split():
             d = metadata.split("=")
             if len(d) != 2:
                 raise ValueError("metadata must be key=value")
+
             if d[0] == "max_link_capacity":
                 if not d[1].isdigit() or int(d[1]) < 1:
-                    raise ValueError("max_link_capacity must be a positive integer")
+                    raise ValueError("max_link_capacity must be "
+                                     "a positive integer")
                 max_link_capacity = int(d[1])
             else:
                 raise ValueError(f"unknown metadata '{d[0]}' for connection")
 
-        self.connections.append((zone1, zone2, max_link_capacity))
+        self.connections.append((coord_zone1, coord_zone2, max_link_capacity))
