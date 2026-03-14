@@ -1,28 +1,31 @@
-SRC =	sources/ fly_in.py
+SRC =	src/ fly_in.py
 
 FLAGS = --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
 
 install:
-	uv venv --python 3.10
-	uv add --dev flake8 mypy
-	uv add pydantic pygame
+	@uv venv --python 3.10
+	@uv add --dev flake8 mypy
+	@uv add pydantic pygame
+	@uv sync
+	@clear
 
 run:
-	uv sync
-	.venv/bin/python3 fly_in.py
-
+	@clear
+	@.venv/bin/python3 fly_in.py
 
 debug:
-	uv sync
-	.venv/bin/python3 -m pdb fly_in.py
+	@clear
+	@.venv/bin/python3 -m pdb fly_in.py
 
 clean:
+	@clear
 	find . -type d -name "__pycache__" -exec rm -rf {} +
 	find . -type d -name ".mypy_cache" -exec rm -rf {} +
 	find . -type d -name ".ruff_cache" -exec rm -rf {} +
 	find . -name "*.pyc" -delete
 
 fclean: clean
+	@clear
 	rm -rf .venv
 	rm -f uv.lock
 	rm -f maze.txt
