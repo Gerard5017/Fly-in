@@ -2,6 +2,8 @@ SRC =	src/ fly_in.py
 
 FLAGS = --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
 
+ARG ?=
+
 install:
 	@uv venv --python 3.10
 	@uv add --dev flake8 mypy
@@ -11,11 +13,11 @@ install:
 
 run:
 	@clear
-	@.venv/bin/python3 fly_in.py
+	@.venv/bin/python3 fly_in.py $(ARG)
 
 debug:
 	@clear
-	@.venv/bin/python3 -m pdb fly_in.py
+	@.venv/bin/python3 -m pdb fly_in.py $(ARG)
 
 clean:
 	@clear

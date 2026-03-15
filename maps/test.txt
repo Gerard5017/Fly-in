@@ -1,0 +1,44 @@
+# Test multi-path
+nb_drones: 6
+
+start_hub: start 0 0 [color=green max_drones=6]
+
+# Chemin A - rapide mais étroit
+hub: path_a1 1 2 [color=cyan max_drones=1]
+hub: path_a2 2 2 [color=cyan max_drones=1]
+hub: path_a3 3 2 [color=cyan max_drones=1]
+
+# Chemin B - normal capacité 2
+hub: path_b1 1 0 [color=blue max_drones=2]
+hub: path_b2 2 0 [color=blue max_drones=2]
+hub: path_b3 3 0 [color=blue max_drones=2]
+
+# Chemin C - restricted mais large
+hub: path_c1 1 -2 [zone=restricted color=red max_drones=3]
+hub: path_c2 2 -2 [zone=restricted color=red max_drones=3]
+hub: path_c3 3 -2 [zone=restricted color=red max_drones=3]
+
+# Convergence
+hub: merge 4 0 [color=yellow max_drones=6]
+
+end_hub: goal 5 0 [color=green max_drones=6]
+
+# Connexions chemin A
+connection: start-path_a1
+connection: path_a1-path_a2
+connection: path_a2-path_a3
+connection: path_a3-merge
+
+# Connexions chemin B
+connection: start-path_b1 [max_link_capacity=2]
+connection: path_b1-path_b2 [max_link_capacity=2]
+connection: path_b2-path_b3 [max_link_capacity=2]
+connection: path_b3-merge
+
+# Connexions chemin C
+connection: start-path_c1
+connection: path_c1-path_c2
+connection: path_c2-path_c3
+connection: path_c3-merge
+
+connection: merge-goal [max_link_capacity=6]

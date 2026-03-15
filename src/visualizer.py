@@ -1,6 +1,7 @@
 import os
 import pygame
 from .map_validator import MapValidator
+from .simulation import Simulation
 from .hub import Hub
 from typing import Optional
 from .metadata import Color, Zone
@@ -19,6 +20,9 @@ class Visualiser():
         if self.map.end_hub is not None:
             self.all_hubs.append(self.map.end_hub)
 
+        self.simulation = Simulation(self.all_hubs, self.map)
+        self.simulation.create_drone()
+
         max_x = max(h.x for h in self.all_hubs)
         max_y = max(h.y for h in self.all_hubs)
         min_x = min(h.x for h in self.all_hubs)
@@ -27,7 +31,7 @@ class Visualiser():
         self.dif_x = max_x - min_x + 2
         self.dif_y = max_y - min_y + 2
 
-        self.cell_size = min(1800 // self.dif_x, 1800 // self.dif_y)
+        self.cell_size = min(1800 // self.dif_x, 900 // self.dif_y)
         self.origin_x = (-min_x + 1) * self.cell_size
         self.origin_y = (-min_y + 1) * self.cell_size
 
@@ -64,12 +68,23 @@ class Visualiser():
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RIGHT:
+                        self.simulation.exec_turn(True)
+                    if event.key == pygame.K_LEFT:
+                        self.simulation.exec_turn(False)
+                    if event.key == pygame.K_ESCAPE:
+                        self.simulation.exec_turn(False)
+                        running = False
 
             self.draw_background()
             self.draw_grid()
+            self.draw_pannel()
             self.draw_connections()
             self.draw_hubs()
             self.draw_hubs_name()
+            self.draw_drones()
+            self.draw_drones_names()
             self.draw_assets()
             pygame.display.flip()
             self.clock.tick(60)
@@ -179,3 +194,57 @@ class Visualiser():
                 self.screen.blit(asset, (px, py))
         except FileNotFoundError:
             raise FileNotFoundError("Asset zone type not found")
+
+    def draw_drones(self) -> None:
+        """Draw drones on their current zone."""
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        path = os.path.join(base_dir, "ressource", "drone.png")
+        try:
+            for drone in self.simulation.drones:
+                s = self.cell_size // 6
+                h = drone.current_zone()
+                px = (self.origin_x + h.x * self.cell_size) - s // 2
+                py = (self.origin_y + h.y * self.cell_size) - s * 1.8
+                img = pygame.image.load(path).convert_alpha()
+                asset = pygame.transform.scale(img, (s, s))
+                self.screen.blit(asset, (px, py))
+        except FileNotFoundError:
+            raise FileNotFoundError("Asset zone type not found")
+        
+    def draw_drones_names(self):
+        """Draw drones names next to each drone."""
+        police = self.cell_size // 20
+        font = pygame.font.SysFont("mono", police)
+        for d in self.simulation.drones:
+            s = self.cell_size // 6
+            h = d.current_zone()
+            text = font.render(d.drone_id, True, (0))
+            px = (self.origin_x + h.x * self.cell_size) - s // 2
+            py = (self.origin_y + h.y * self.cell_size) - int(s * 1.8)
+            dx = s
+            dy = s // 2 - text.get_height() // 2
+            self.screen.blit(text, (px + dx, py + dy))
+
+
+    def draw_pannel(self) -> None:
+        """Draw Pannel info panel in bottom right corner."""
+        font = pygame.font.SysFont("mono", 18)
+        padding = 10
+        lines = [
+            f"Turn: {self.simulation.turn}",
+            "-" * 20,
+            "esc: close window",
+            "->:  next turn",
+            "<-:  previous turn",
+        ]
+        line_height = 18 + padding
+        panel_h = line_height * len(lines) + padding * 2
+        panel_w = max(font.size(l)[0] for l in lines) + padding * 2
+        px = self.width - panel_w - padding
+        py = self.height - panel_h - padding
+        surface = pygame.Surface((panel_w, panel_h), pygame.SRCALPHA)
+        surface.fill((0, 0, 0, 180))
+        self.screen.blit(surface, (px, py))
+        for i, line in enumerate(lines):
+            text = font.render(line, True, (255, 255, 255))
+            self.screen.blit(text, (px + padding, py + padding + i * line_height))

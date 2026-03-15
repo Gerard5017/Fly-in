@@ -1,12 +1,13 @@
 from src.map_validator import MapValidator
 from src.visualizer import Visualiser
+from sys import argv
 
 
 if __name__ == "__main__":
     try:
-        # map = MapValidator("easy/01_linear_path.txt")
-        map = MapValidator("hard/01_maze_nightmare.txt")
-        # map = MapValidator("challenger/01_the_impossible_dream.txt")
+        if len(argv) != 2 or not argv[1].endswith(".txt"):
+            raise ValueError("must have a map argument wich is a .txt")
+        map = MapValidator(argv[1])
         visual = Visualiser(map)
         visual.run()
 
