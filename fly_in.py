@@ -13,3 +13,6 @@ if __name__ == "__main__":
 
     except Exception as e:
         print(f"ERROR: {e}")
+
+    except KeyboardInterrupt:
+        print("\nProgramme was kill")

@@ -4,7 +4,7 @@ nb_drones: 6
 start_hub: start 0 0 [color=green max_drones=6]
 
 # Chemin A - rapide mais étroit
-hub: path_a1 1 2 [color=cyan max_drones=1]
+hub: path_a1 1 2 [color=cyan max_drones=1] ksokd
 hub: path_a2 2 2 [color=cyan max_drones=1]
 hub: path_a3 3 2 [color=cyan max_drones=1]
 

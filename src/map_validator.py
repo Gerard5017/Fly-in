@@ -33,6 +33,7 @@ class MapValidator():
                        (content[i].startswith("hub:") or
                         content[i].startswith("start_hub:") or
                         content[i].startswith("end_hub:"))):
+
                     self.parse_hub(content[i])
                     i += 1
 
@@ -87,7 +88,27 @@ class MapValidator():
         if line_hub.startswith("end_hub:") and self.end_hub is not None:
             raise ValueError("must have only one end_hub")
 
+        open_count = line_hub.count("[")
+        close_count = line_hub.count("]")
+
+        if open_count != close_count:
+            raise ValueError("mismatched brackets")
+        if open_count > 1 or close_count > 1:
+            raise ValueError("too many brackets")
+        if "[" in line_hub and "]" not in line_hub:
+            raise ValueError("unclosed bracket")
+        if "]" in line_hub and "[" not in line_hub:
+            raise ValueError("unexpected closing bracket")
+        if "[" in line_hub and "]" in line_hub:
+            if line_hub.index("[") > line_hub.index("]"):
+                raise ValueError("closing bracket before opening")
+        if "]" in line_hub:
+            after_bracket = line_hub[line_hub.index("]") + 1:].strip()
+            if after_bracket != "":
+                raise ValueError("unexpected characters after ']'")
+
         meta_match = re.search(r'\[([^\]]*)\]', line_hub)
+
         metadata_str = meta_match.group(1) if meta_match else ""
         data_part = line_hub.split("[")[0] if meta_match else line_hub
 
