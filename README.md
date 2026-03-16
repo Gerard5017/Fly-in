@@ -25,21 +25,17 @@ The simulation addresses real-world challenges in resource allocation and traffi
 
 2. Install dependencies using pip:
    ```bash
-   pip install -r requirements.txt
-   ```
-   Or if using the pyproject.toml:
-   ```bash
-   pip install .
+   make install
    ```
 
 ### Execution
 
 Run the simulation with a map file:
 ```bash
-python fly_in.py maps/easy/01_linear_path.txt
+make run ARG="easy/01_linear_path.txt"
 ```
 
-Replace `maps/easy/01_linear_path.txt` with any `.txt` map file from the `maps/` directory. The program will validate the map, run the simulation, and display the graphical visualization.
+Replace `easy/01_linear_path.txt` with any `.txt` map file from the `maps/` directory. The program will validate the map, run the simulation, and display the graphical visualization.
 
 ### Map Files
 
